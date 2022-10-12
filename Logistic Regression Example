@@ -1,0 +1,99 @@
+/* Proc Python within the Analytics Pro Container with Example */
+
+*Create the library;
+libname open "/data";
+
+proc python;
+submit;
+
+import os
+os.system("python3 -m pip install sklearn --user")
+os.system("python3 -m pip install pandas --user")
+os.system("python3 -m pip install numpy --user")
+os.system("python3 -m pip install seaborn --user")
+os.system("python3 -m pip install matplotlib --user")
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+#Read in the data & convert sas data set to dataframe
+data = SAS.sd2df("sashelp.iris")
+#print(data)
+
+##################### Plot the data #######################
+
+# Explictly setting the Matplot Configuration Directory to the temporary work environment
+os.environ['MPLCONFIGDIR'] = SAS.workpath
+
+# might have to clear the graph using plt.clf() if you run your (changed) Python code multiple times
+# to ensure that the latest graph is stored in the .png file.
+plt.clf()
+
+#Making the scatter plot
+scat_plot = sns.FacetGrid(data, hue ="Species",
+              height = 6).map(plt.scatter,
+                              'PetalLength',
+                              'SepalLength').add_legend()
+plt.xlabel('Petal Length (cm)')
+plt.ylabel('Sepal Length (cm)')
+scat_plot.fig.subplots_adjust(top=.95)
+plt.title('Sepal & Petal Length by Species')
+plt.grid(True)
+plt.show()
+
+# Use SAS.workpath, it is a supported object attribute
+graphfile=SAS.workpath+'matplotlib-ex42.png'
+plt.savefig(graphfile)
+
+# As proc gslide is an interactive proc, best practice is to use quit; to stop the proc
+SAS.submit("proc gslide iframe='{}' imagestyle=fit; run;quit;".format(graphfile))
+
+plt.clf()
+
+###################### Logistic Regression ##########################
+
+#Separate the target from the dependencies
+X = data.iloc[:, data.columns != 'Species'] # removes the species column
+y = data.iloc[:, data.columns == 'Species'] #Selects only the species variable
+
+#Split the data into 70% training and 30% testing
+x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=123)
+
+#Train the Logistic Regression Model
+model = LogisticRegression()
+model.fit(x_train, y_train) 
+
+#Test the model
+predictions = model.predict(x_test)
+print(predictions)
+
+#Get precision, recall, f1-score
+print(classification_report(y_test, predictions))
+
+#Print accuracy
+print(accuracy_score(y_test, predictions))
+
+#Merge the test set 
+tst = np.column_stack([x_test, y_test]) #column_stack = Stack 1-D arrays as columns into a 2-D array
+
+#Merge the test set with the predictions
+tst_merged = np.column_stack([tst, predictions])
+cols = ['SepalLength', 'SepalWidth', 'PetalLength', 'PetalWidth', 'Species', 'Predicted']
+df = pd.DataFrame(tst_merged, columns = cols) #must be in dataframe format to convert to sas dataset
+#print(df)
+
+#convert the dataframes to a sas dataset
+SAS.df2sd(df, "open.iris_predicted") # test set with predictions from model
+SAS.df2sd(data, "open.iris_full") # full dataset
+
+endsubmit;
+run;
+
+*Print the test dataset with predicted values;
+proc print data = open.iris_predicted;
+run;
