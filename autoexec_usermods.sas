@@ -1,1 +1,2 @@
--e "lockdown enable_ams=PYTHON;\nlockdown enable_ams=SOCKET;" 
+lockdown enable_ams=PYTHON;
+lockdown enable_ams=SOCKET;
