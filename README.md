@@ -6,3 +6,5 @@ After PROC PYTHON has been enabled, the Logistic Regression code can be pasted i
 
 While I completed the analysis within one PROC PYTHON step, this is not required. There can be multiple PROC PYTHON & submit/endsubmit blocks. For example, I could have run the plot in one submit/endsubmit block and the logistic regression model in another.
 
+# Additional Resources
+[Analytics Pro Deployment Guide](https://go.documentation.sas.com/api/collections/anprocdc/v_001/docsets/dplyviya0ctr/content/dplyviya0ctr.pdf?locale=en)
