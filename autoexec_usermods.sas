@@ -1,0 +1,1 @@
+-e "lockdown enable_ams=PYTHON;\nlockdown enable_ams=SOCKET;" 
