@@ -3,8 +3,10 @@
 *Create the library;
 libname open "/data";
 
-proc python; #set timeout=120 option if proc python takes too long to initialize
+proc python; 
 submit;
+
+#set timeout=120 (proc python timeout=120;) option if proc python takes too long to initialize
 
 import os
 #os.system("python3 -m pip install sklearn --user")
