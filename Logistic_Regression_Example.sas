@@ -1,17 +1,17 @@
-/* Proc Python within the Analytics Pro Container with Example */
+/* Proc Python within the Apro Container with Example */
 
 *Create the library;
 libname open "/data";
 
-proc python;
+proc python; #set timeout=120 option if proc python takes too long to initialize
 submit;
 
 import os
-os.system("python3 -m pip install sklearn --user")
-os.system("python3 -m pip install pandas --user")
-os.system("python3 -m pip install numpy --user")
-os.system("python3 -m pip install seaborn --user")
-os.system("python3 -m pip install matplotlib --user")
+#os.system("python3 -m pip install sklearn --user")
+#os.system("python3 -m pip install pandas --user")
+#os.system("python3 -m pip install numpy --user")
+#os.system("python3 -m pip install seaborn --user")
+#os.system("python3 -m pip install matplotlib --user")
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
@@ -27,14 +27,10 @@ data = SAS.sd2df("sashelp.iris")
 
 ##################### Plot the data #######################
 
-# Explictly setting the Matplot Configuration Directory to the temporary work environment
-os.environ['MPLCONFIGDIR'] = SAS.workpath
-
 # might have to clear the graph using plt.clf() if you run your (changed) Python code multiple times
 # to ensure that the latest graph is stored in the .png file.
 plt.clf()
 
-#Making the scatter plot
 scat_plot = sns.FacetGrid(data, hue ="Species",
               height = 6).map(plt.scatter,
                               'PetalLength',
@@ -44,14 +40,7 @@ plt.ylabel('Sepal Length (cm)')
 scat_plot.fig.subplots_adjust(top=.95)
 plt.title('Sepal & Petal Length by Species')
 plt.grid(True)
-plt.show()
-
-# Use SAS.workpath, it is a supported object attribute
-graphfile=SAS.workpath+'matplotlib-ex42.png'
-plt.savefig(graphfile)
-
-# As proc gslide is an interactive proc, best practice is to use quit; to stop the proc
-SAS.submit("proc gslide iframe='{}' imagestyle=fit; run;quit;".format(graphfile))
+SAS.pyplot(plt)
 
 plt.clf()
 
@@ -70,7 +59,7 @@ model.fit(x_train, y_train)
 
 #Test the model
 predictions = model.predict(x_test)
-print(predictions)
+print(predictions)# printing predictions
 
 #Get precision, recall, f1-score
 print(classification_report(y_test, predictions))
@@ -87,9 +76,9 @@ cols = ['SepalLength', 'SepalWidth', 'PetalLength', 'PetalWidth', 'Species', 'Pr
 df = pd.DataFrame(tst_merged, columns = cols) #must be in dataframe format to convert to sas dataset
 #print(df)
 
-#convert the dataframes to a sas dataset
-SAS.df2sd(df, "open.iris_predicted") # test set with predictions from model
-SAS.df2sd(data, "open.iris_full") # full dataset
+#convert the dataframe to a sas dataset
+SAS.df2sd(df, "open.iris_predicted")
+SAS.df2sd(data, "open.iris_full")
 
 endsubmit;
 run;
